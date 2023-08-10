@@ -20,9 +20,16 @@ FPS = 60
 level = 1
 level_difficulty = 0
 target_difficulty = 1000
+DIFFICULTY_MULTIPLIER = 1.1
+game_over = False
+next_level = False
 ENEMY_TIMER = 1000
 last_enemy = pygame.time.get_ticks()
 enemies_alive = 0
+
+# define font
+font_30 = pygame.font.SysFont('Futura', 30)
+font_60 = pygame.font.SysFont('Futura', 60)
 
 #  load images
 bg = pygame.image.load('img/bg.png').convert_alpha()
@@ -59,6 +66,13 @@ for enemy in enemy_types:
             temp_list.append(img)
         animation_list.append(temp_list)
     enemy_animations.append(animation_list)
+
+
+# function to output text onto the screen
+def draw_text(text, f, text_col, x, y):
+    img = f.render(text, True, text_col)
+    screen.blit(img, (x, y))
+
 
 # create groups
 bullet_group = pygame.sprite.Group()
@@ -106,6 +120,29 @@ while run:
             last_enemy = pygame.time.get_ticks()
             # increase level difficulty by enemy health
             level_difficulty += enemy.health
+
+    # check if all the enemies have been spawned
+    if level_difficulty >= target_difficulty:
+        # check how many are still alive
+        enemies_alive = 0
+        for e in enemy_group:
+            if e.alive:
+                enemies_alive += 1
+        # if there are no enemies alive, then the level is complete
+        if enemies_alive == 0 and not next_level:
+            next_level = True
+            level_reset_time = pygame.time.get_ticks()
+
+    # move onto the next level
+    if next_level:
+        draw_text("LEVEL COMPLETE", font_60, WHITE, 200, 300)
+        if pygame.time.get_ticks() - level_reset_time > 1500:
+            next_level = False
+            level += 1
+            last_enemy = pygame.time.get_ticks()
+            target_difficulty = target_difficulty * DIFFICULTY_MULTIPLIER
+            level_difficulty = 0
+            enemy_group.empty()
 
     # event handler
     for event in pygame.event.get():
