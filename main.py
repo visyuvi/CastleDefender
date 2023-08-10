@@ -79,7 +79,7 @@ while run:
     bullet_group.draw(screen)
 
     # draw enemies
-    enemy_group.update(screen)
+    enemy_group.update(screen, castle, bullet_group)
 
     # event handler
     for event in pygame.event.get():

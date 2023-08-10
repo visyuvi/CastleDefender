@@ -8,6 +8,8 @@ class Castle:
         self.health = 1000
         self.max_health = self.health
         self.fired = False
+        self.money = 0
+        self.score = 0
 
         width = image100.get_width()
         height = image100.get_height()
