@@ -4,6 +4,7 @@ from castle import Castle
 from constants import *
 from enemy import Enemy
 from crosshair import Crosshair
+import random
 
 # initialize pygame
 pygame.init()
@@ -15,6 +16,13 @@ pygame.display.set_caption("Castle Defender")
 clock = pygame.time.Clock()
 FPS = 60
 
+# define game variables
+level = 1
+level_difficulty = 0
+target_difficulty = 1000
+ENEMY_TIMER = 1000
+last_enemy = pygame.time.get_ticks()
+enemies_alive = 0
 
 #  load images
 bg = pygame.image.load('img/bg.png').convert_alpha()
@@ -23,17 +31,16 @@ castle_img_100 = pygame.image.load('img/castle/castle_100.png').convert_alpha()
 castle_img_50 = pygame.image.load('img/castle/castle_50.png').convert_alpha()
 castle_img_25 = pygame.image.load('img/castle/castle_25.png').convert_alpha()
 
-
 # bullet images
 bullet_img = pygame.image.load('img/bullet.png').convert_alpha()
 b_w = bullet_img.get_width()
 b_h = bullet_img.get_height()
-bullet_img = pygame.transform.scale(bullet_img, (int(b_w * scale),  int(b_h * scale)))
+bullet_img = pygame.transform.scale(bullet_img, (int(b_w * scale), int(b_h * scale)))
 
 # load enemy images
 enemy_animations = []
-enemy_types = ['knight']
-enemy_health = [75]
+enemy_types = ['knight', 'goblin', 'purple_goblin', 'red_goblin']
+enemy_health = [75, 100, 125, 150]
 
 animation_types = ['walk', 'attack', 'death']
 for enemy in enemy_types:
@@ -53,19 +60,15 @@ for enemy in enemy_types:
         animation_list.append(temp_list)
     enemy_animations.append(animation_list)
 
-# create group
+# create groups
 bullet_group = pygame.sprite.Group()
+enemy_group = pygame.sprite.Group()
 
 # create castle
 castle = Castle(castle_img_100, castle_img_50, castle_img_25, SCREEN_WIDTH - 250, SCREEN_HEIGHT - 300, 0.2)
 
 # create crosshair
 crosshair = Crosshair(0.025)
-
-# create enemies
-enemy_1 = Enemy(enemy_health[0], enemy_animations[0], 400, SCREEN_HEIGHT - 100, 1)
-enemy_group = pygame.sprite.Group()
-enemy_group.add(enemy_1)
 
 # game loop
 
@@ -90,6 +93,19 @@ while run:
 
     # draw enemies
     enemy_group.update(screen, castle, bullet_group)
+
+    # create enemies
+    # check if level difficulty is less than target difficulty
+    if level_difficulty < target_difficulty:
+        if pygame.time.get_ticks() - last_enemy > ENEMY_TIMER:
+            # create enemies
+            e = random.randint(0, len(enemy_types) - 1)
+            enemy = Enemy(enemy_health[e], enemy_animations[e], -100, SCREEN_HEIGHT - 100, 1)
+            enemy_group.add(enemy)
+            # reset enemy timer
+            last_enemy = pygame.time.get_ticks()
+            # increase level difficulty by enemy health
+            level_difficulty += enemy.health
 
     # event handler
     for event in pygame.event.get():
