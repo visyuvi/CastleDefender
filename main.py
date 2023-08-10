@@ -5,6 +5,7 @@ from constants import *
 from enemy import Enemy
 from crosshair import Crosshair
 import random
+import button
 
 # initialize pygame
 pygame.init()
@@ -18,6 +19,7 @@ FPS = 60
 
 # define game variables
 level = 1
+high_score = 0
 level_difficulty = 0
 target_difficulty = 1000
 DIFFICULTY_MULTIPLIER = 1.1
@@ -67,11 +69,31 @@ for enemy in enemy_types:
         animation_list.append(temp_list)
     enemy_animations.append(animation_list)
 
+# load button images
+# repair image
+repair_img = pygame.image.load('img/repair.png').convert_alpha()
+# armour image
+armour_img = pygame.image.load('img/armour.png').convert_alpha()
+
+
+
 
 # function to output text onto the screen
 def draw_text(text, f, text_col, x, y):
     img = f.render(text, True, text_col)
     screen.blit(img, (x, y))
+
+
+# function to display status
+def show_info():
+    draw_text("Money: " + str(castle.money), font_30, GREY, 10, 10)
+    draw_text("Score: " + str(castle.score), font_30, GREY, 180, 10)
+    draw_text("High Score: " + str(high_score), font_30, GREY, 180, 30)
+    draw_text("Level: " + str(level), font_30, GREY, SCREEN_WIDTH // 2, 10)
+    draw_text("Health: " + str(castle.health) + "/" + str(castle.max_health), font_30, GREY,
+              SCREEN_WIDTH - 230, SCREEN_HEIGHT - 50)
+    draw_text("1000", font_30, GREY, SCREEN_WIDTH - 220, 70)
+    draw_text("500", font_30, GREY, SCREEN_WIDTH - 70, 70)
 
 
 # create groups
@@ -83,6 +105,10 @@ castle = Castle(castle_img_100, castle_img_50, castle_img_25, SCREEN_WIDTH - 250
 
 # create crosshair
 crosshair = Crosshair(0.025)
+
+# create buttons
+repair_button = button.Button(SCREEN_WIDTH - 220, 10, repair_img, 0.5)
+armour_button = button.Button(SCREEN_WIDTH - 75, 10, armour_img, 1.5)
 
 # game loop
 
@@ -107,6 +133,15 @@ while run:
 
     # draw enemies
     enemy_group.update(screen, castle, bullet_group)
+
+    # show details
+    show_info()
+
+    # draw buttons
+    if repair_button.draw(screen):
+        castle.repair()
+    if armour_button.draw(screen):
+        castle.armour()
 
     # create enemies
     # check if level difficulty is less than target difficulty
@@ -136,7 +171,7 @@ while run:
     # move onto the next level
     if next_level:
         draw_text("LEVEL COMPLETE", font_60, WHITE, 200, 300)
-        if pygame.time.get_ticks() - level_reset_time > 1500:
+        if pygame.time.get_ticks() - level_reset_time > 2000:
             next_level = False
             level += 1
             last_enemy = pygame.time.get_ticks()

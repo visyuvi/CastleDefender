@@ -1,5 +1,7 @@
 # define colours
 WHITE = (255, 255, 255)
+GREY = (100, 100, 100)
+
 scale = 0.075
 
 # game window
