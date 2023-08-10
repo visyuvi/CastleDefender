@@ -4,7 +4,7 @@ from bullet import Bullet
 
 
 class Castle:
-    def __init__(self, image100, x, y, scale):
+    def __init__(self, image100, image50, image25, x, y, scale):
         self.health = 1000
         self.max_health = self.health
         self.fired = False
@@ -15,6 +15,9 @@ class Castle:
         height = image100.get_height()
 
         self.image100 = pygame.transform.scale(image100, (int(width * scale), int(height * scale)))
+        self.image50 = pygame.transform.scale(image50, (int(width * scale), int(height * scale)))
+        self.image25 = pygame.transform.scale(image25, (int(width * scale), int(height * scale)))
+
         self.image = self.image100
         self.rect = self.image100.get_rect()
         self.rect.x = x
@@ -37,4 +40,12 @@ class Castle:
             self.fired = False
 
     def draw(self, screen):
+        # check  which  image to use based on health
+        if self.health <= 250:
+            self.image = self.image25
+        elif self.health <= 500:
+            self.image = self.image50
+        else:
+            self.image = self.image100
+
         screen.blit(self.image, self.rect)

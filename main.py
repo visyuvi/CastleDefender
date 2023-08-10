@@ -3,6 +3,7 @@ import pygame
 from castle import Castle
 from constants import *
 from enemy import Enemy
+from crosshair import Crosshair
 
 # initialize pygame
 pygame.init()
@@ -19,6 +20,9 @@ FPS = 60
 bg = pygame.image.load('img/bg.png').convert_alpha()
 # castle
 castle_img_100 = pygame.image.load('img/castle/castle_100.png').convert_alpha()
+castle_img_50 = pygame.image.load('img/castle/castle_50.png').convert_alpha()
+castle_img_25 = pygame.image.load('img/castle/castle_25.png').convert_alpha()
+
 
 # bullet images
 bullet_img = pygame.image.load('img/bullet.png').convert_alpha()
@@ -53,10 +57,13 @@ for enemy in enemy_types:
 bullet_group = pygame.sprite.Group()
 
 # create castle
-castle = Castle(castle_img_100, SCREEN_WIDTH - 250, SCREEN_HEIGHT - 300, 0.2)
+castle = Castle(castle_img_100, castle_img_50, castle_img_25, SCREEN_WIDTH - 250, SCREEN_HEIGHT - 300, 0.2)
+
+# create crosshair
+crosshair = Crosshair(0.025)
 
 # create enemies
-enemy_1 = Enemy(enemy_health[0], enemy_animations[0], 200, SCREEN_HEIGHT - 100, 1)
+enemy_1 = Enemy(enemy_health[0], enemy_animations[0], 400, SCREEN_HEIGHT - 100, 1)
 enemy_group = pygame.sprite.Group()
 enemy_group.add(enemy_1)
 
@@ -73,6 +80,9 @@ while run:
     # draw castle
     castle.draw(screen)
     castle.shoot(bullet_img, bullet_group)
+
+    # draw crosshair
+    crosshair.draw(screen)
 
     # draw bullets
     bullet_group.update()
