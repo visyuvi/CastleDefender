@@ -4,7 +4,9 @@ from castle import Castle
 from constants import *
 from enemy import Enemy
 from crosshair import Crosshair
+from tower import Tower
 import random
+import os
 import button
 
 # initialize pygame
@@ -28,6 +30,15 @@ next_level = False
 ENEMY_TIMER = 1000
 last_enemy = pygame.time.get_ticks()
 enemies_alive = 0
+TOWER_COST = 5000
+
+tower_positions = [
+    [SCREEN_WIDTH - 250, SCREEN_HEIGHT - 150],
+    [SCREEN_WIDTH - 200, SCREEN_HEIGHT - 150],
+    [SCREEN_WIDTH - 150, SCREEN_HEIGHT - 150],
+    [SCREEN_WIDTH - 100, SCREEN_HEIGHT - 150],
+]
+max_towers = len(tower_positions)
 
 # define font
 font_30 = pygame.font.SysFont('Futura', 30)
@@ -35,10 +46,15 @@ font_60 = pygame.font.SysFont('Futura', 60)
 
 #  load images
 bg = pygame.image.load('img/bg.png').convert_alpha()
-# castle
+# castle images
 castle_img_100 = pygame.image.load('img/castle/castle_100.png').convert_alpha()
 castle_img_50 = pygame.image.load('img/castle/castle_50.png').convert_alpha()
 castle_img_25 = pygame.image.load('img/castle/castle_25.png').convert_alpha()
+
+# tower images
+tower_img_100 = pygame.image.load('img/tower/tower_100.png').convert_alpha()
+tower_img_50 = pygame.image.load('img/tower/tower_50.png').convert_alpha()
+tower_img_25 = pygame.image.load('img/tower/tower_25.png').convert_alpha()
 
 # bullet images
 bullet_img = pygame.image.load('img/bullet.png').convert_alpha()
@@ -76,8 +92,6 @@ repair_img = pygame.image.load('img/repair.png').convert_alpha()
 armour_img = pygame.image.load('img/armour.png').convert_alpha()
 
 
-
-
 # function to output text onto the screen
 def draw_text(text, f, text_col, x, y):
     img = f.render(text, True, text_col)
@@ -93,10 +107,12 @@ def show_info():
     draw_text("Health: " + str(castle.health) + "/" + str(castle.max_health), font_30, GREY,
               SCREEN_WIDTH - 230, SCREEN_HEIGHT - 50)
     draw_text("1000", font_30, GREY, SCREEN_WIDTH - 220, 70)
+    draw_text(str(TOWER_COST), font_30, GREY, SCREEN_WIDTH - 150, 70)
     draw_text("500", font_30, GREY, SCREEN_WIDTH - 70, 70)
 
 
 # create groups
+tower_group = pygame.sprite.Group()
 bullet_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 
@@ -108,10 +124,10 @@ crosshair = Crosshair(0.025)
 
 # create buttons
 repair_button = button.Button(SCREEN_WIDTH - 220, 10, repair_img, 0.5)
+tower_buttton = button.Button(SCREEN_WIDTH - 140, 10, tower_img_100, 0.1)
 armour_button = button.Button(SCREEN_WIDTH - 75, 10, armour_img, 1.5)
 
 # game loop
-
 run = True
 while run:
 
@@ -124,6 +140,9 @@ while run:
     castle.draw(screen)
     castle.shoot(bullet_img, bullet_group)
 
+    # draw towers
+    tower_group.draw(screen)
+
     # draw crosshair
     crosshair.draw(screen)
 
@@ -134,6 +153,8 @@ while run:
     # draw enemies
     enemy_group.update(screen, castle, bullet_group)
 
+    # draw towers
+    tower_group.update(enemy_group, screen, bullet_img, bullet_group, castle)
     # show details
     show_info()
 
@@ -142,6 +163,19 @@ while run:
         castle.repair()
     if armour_button.draw(screen):
         castle.armour()
+    if tower_buttton.draw(screen):
+        # check if there is enough money to build a tower
+        if castle.money >= TOWER_COST and len(tower_group) < max_towers:
+            tower = Tower(
+                tower_img_100,
+                tower_img_50,
+                tower_img_25,
+                tower_positions[len(tower_group)][0],
+                tower_positions[len(tower_group)][1],
+                0.2)
+            tower_group.add(tower)
+            # subtract money
+            castle.money -= TOWER_COST
 
     # create enemies
     # check if level difficulty is less than target difficulty
